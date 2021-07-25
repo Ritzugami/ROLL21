@@ -2,7 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>title</title>
+  <title>Host a game</title>
+  <script>
+      let initGame = () => {
+        var GID = document.getElementById(`GIDi`).value
+        location.href=`/hostInit?GID=${GID}`
+      }
+
+  </script>
 </head>
 <style>
     #foot {
@@ -16,9 +23,11 @@
     <br>
     Input your game's ID:
     <br>
-    <input></input>
+    <input id="GIDi"></input>
     <br>
-    <button>Begin game!</button>
+    <button id="begingame" onclick="initGame()">Begin game!</button>
+
+    
 </body>
 <footer id="foot">
 <a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>

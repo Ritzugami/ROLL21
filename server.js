@@ -22,10 +22,11 @@ const io = new Server(server)
 
 //Create arrays for active players, entities, and the map fog
 
-currentHostID = ``
+var currentHostAID = ``
+var currentGID = ``;
 var players = [];
 var entities = [];
-
+var fog = [];
 
 //create a session token.
 var genStr = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
@@ -209,6 +210,47 @@ app.get(`/beginInstance`, (req,res) => {
 
 app.get(`/hostagame`, (req,res) => {
     res.sendFile(__dirname+`\\data\\html\\hostAGame.html`)
+})
+
+//Prepare the server for a hosted game. Load data into server memory for easy distribution and to reduce reads. The largest item is the background image, and that's not usually any bigger than 20mb (for a very large background). Memory space is not an issue as only one game can be loaded at a time, per server instance.
+app.get(`/hostInit`, async (req,res) => {
+    //first check that the requested game exists.
+    var games;
+    var gameInfo;
+    await new Promise((rs,rj) => {
+        console.log(__dirname + `\\data\\games`)
+        fs.readdir(__dirname + `\\data\\games`, (err,files) => {
+            games = files.slice()
+            rs()
+        })
+        
+    })
+    if(!games.includes(`game_${req.query.GID}.JSON`))
+    {
+        console.log(`game ${req.query.GID} not found!`)
+        res.send(`No game with that ID was found!`)
+        return
+    }
+    console.log(`game ${req.query.GID} found!`)
+    //next check that the requesting host owns the game theyre trying to start.
+    await new Promise((rs,rj) => {
+        fs.readFile(__dirname+`\\data\\games\\game_${req.query.GID}.JSON`,`utf8`,(err,data) => {
+            gameInfo = JSON.parse(data)
+            rs()
+        })
+    })
+    if(gameInfo.ownerAID!==req.cookies.AID)
+    {
+        console.log(`The requester doesnt own the requested game.`)
+        res.send(`You don't own this game!`)
+        return
+    }
+    console.log(gameInfo)
+
+    currentHostAID = req.cookies.AID
+
+
+    res.send(`game inited.`)
 })
 
 
