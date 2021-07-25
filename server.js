@@ -22,11 +22,24 @@ const io = new Server(server)
 
 //Create arrays for active players, entities, and the map fog
 
+
+
+///////TODO////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+Add HUD for all party members and their healths
+Add easy file upload system
+
+
+
+
+*/
+
+
 var currentHostAID = ``
 var currentGID = ``;
-var players = [];
-var entities = [];
-var fog = [];
+var currentImgBuffer;
+var currentGameInfo;
+
 
 //create a session token.
 var genStr = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
@@ -38,6 +51,7 @@ for(var tokenCon = 0; tokenCon<128;tokenCon++)
 console.log(sessionToken)
 
 
+//socket controllers.
 io.on(`connection`, (socket) => {
     console.log(`somebody is here...`)
     socket.on(`disconnect`, ()=> {
@@ -50,6 +64,10 @@ io.on(`connection`, (socket) => {
         appendToTextArea(c);
     })
 
+    socket.on(`dmjoin`, ()=> {
+        console.log(`The DM has joined! Sending data to the DM...`)
+        socket.emit(`dmInit`,{imgBuffer: currentImgBuffer, gameInfo: currentGameInfo})
+    })
 })
 
 let appendToTextArea = (c) => {
@@ -193,15 +211,19 @@ app.post(`/createGameInternal`, async (req,res)=> {
     //write a game JSON to the games folder.
     var newGameJSON = {
         "ownerAID": req.cookies.AID,
-        gameName: ``,
+        GID: gameID,
+        gameName: `ttt`,
         players: [],
         entities: [],
         fog: []
     }
+    
+
+
     fs.writeFile(`data\\games\\game_${gameID}.JSON`,JSON.stringify(newGameJSON),'utf8', ()=> {
         console.log(`wrote game.`)
     })
-    res.redirect(`/home`)
+    res.redirect(`/gamedm`)
 })
 
 app.get(`/beginInstance`, (req,res) => {
@@ -245,12 +267,61 @@ app.get(`/hostInit`, async (req,res) => {
         res.send(`You don't own this game!`)
         return
     }
+    
     console.log(gameInfo)
+    //Now load game info into system memory.
+    currentHostAID = req.cookies.AID;
+    currentGID = gameInfo.GID;
+    currentGameInfo = JSON.parse(JSON.stringify(gameInfo))
+    //load image buffer into memory.
+    currentImgBuffer = await new Promise((rs,rj) => {
+        fs.readFile(__dirname+`\\data\\gameImages\\bgi_${req.query.GID}.png`,`base64`,(err,data) => {
+            rs(data)
+        })
+    })
 
-    currentHostAID = req.cookies.AID
 
+    /////////////add a test player!
+    //add a test unage
+    var testImageBuffer = await new Promise((rs,rj) => {
+        fs.readFile(__dirname+`/literallyme.png`,`base64`,(err,data) => {
+            rs(data)
+        })
+    })
+    //add a test player.
+    currentGameInfo.players.push({
+        currXPos: 75,
+        currYPos: 50,
+        currHealth: 40,
+        currImage: testImageBuffer,
+        CID: `ABCDEFGHIJKLMNOP`,
+        characterData: {
+            name: "Katori",
+            maxHealth: `40`
+        }
+    })
+    currentGameInfo.players.push({
+        currXPos: 200,
+        currYPos: 500,
+        currHealth: 10,
+        currImage: testImageBuffer,
+        CID: `123456789ABCDEFG`,
+        characterData: {
+            name: "Ooyodo",
+            maxHealth: `47`
+        }
+    })
 
-    res.send(`game inited.`)
+    console.log(`A game has been initialized!\n_________________________________________________`)
+    console.log(`Current GID: ${currentGID}\nCurrent host AID: ${currentHostAID}\nCurrent game info:`)
+    //console.log(currentGameInfo)
+
+    res.redirect(`/gamedm`)
+
+})
+
+app.get(`/gamedm`, async (req,res) => {
+    res.sendFile(__dirname+`\\data\\html\\gamedm.html`)
 })
 
 

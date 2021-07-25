@@ -7,9 +7,10 @@
         let init = () =>{
             var socket = io();
             //create the core listener for the form. send data to server on button press for processing.
-            var f = document.getElementById(`form`)
+            
             var mta = document.getElementById(`maintextarea`)
             var CLIInput = document.getElementById('input');
+            var f = document.getElementById(`form`)
             f.addEventListener(`submit`,(e) => {
                 e.preventDefault()
                 console.log(`sending data to server...`)

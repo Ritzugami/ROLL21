@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+  <meta charset="UTF-8">
+  <title>DM Mode</title>
+  <script>
+      var currentGameInfo;
+      let init = () => {
+        var main = document.getElementById(`main`);
+        var party = document.getElementById(`party`);
+        
+        var CLIInput = document.getElementById('input');
+        var f = document.getElementById(`form`)
+            f.addEventListener(`submit`,(e) => {
+                e.preventDefault()
+                console.log(`sending CLI data to server...`)
+                CLIInput.value = ``;
+            })
+        var socket = io()
+
+        socket.emit(`dmjoin`)
+        console.log(`initing a DM instance.`)
+        //primary initializer for page.
+        socket.on(`dmInit`, async (d) => {
+            currentGameInfo = d.gameInfo
+            console.log(`received init request from server.`)
+            console.log(d)
+            //add and set the background
+            
+            var bgbuffer = d.imgBuffer
+            var bg = new Image()
+            main.appendChild(bg)
+            bg.src = `data:image/png;base64,${bgbuffer}`
+            await new Promise((rs,rj) => {
+              bg.onload = (() => {rs()})
+            })
+            console.log(`img width ${bg.width}`)
+            var c = document.getElementById(`fog`)
+            //add listener for onclick canvas.
+            c.addEventListener(`click`, (e)=> {
+              getCPos(e)
+            })
+            c.width = bg.width
+            c.height = bg.height
+            var ctx = c.getContext(`2d`)
+            ctx.fillStyle = `red`
+            ctx.fillRect(0, 0, 1000, 50)
+            
+            //initialize content for each player in the currentGameInfo object.
+            //This is the same content for the add player action.
+            var initPlayerList = currentGameInfo.players.slice()
+            for(var i=0;i<initPlayerList.length;i++)
+            {
+              //create an image of the new player.
+              var charaImg = document.createElement(`img`)
+              charaImg.src = `data:image/png;base64,${initPlayerList[i].currImage}`
+              charaImg.className = `characterImages`
+              charaImg.id=`image_${initPlayerList[i].CID}`
+              charaImg.style.left=`${initPlayerList[i].currXPos}px`
+              charaImg.style.top=`${initPlayerList[i].currYPos}px`
+              main.appendChild(charaImg)
+              //add them to the party HUD.
+              var charaDiv = document.createElement(`div`)
+              charaDiv.className = `characterDivs`
+              charaDiv.id=`div_${initPlayerList[i].CID}`
+              charaDiv.innerHTML=initPlayerList[i].characterData.name
+              //add the class subdiv.
+              var charaDivClass = document.createElement(`div`)
+              charaDivClass.innerHTML = `Kanmusu`
+              charaDiv.appendChild(charaDivClass)
+              //add the health subdiv.
+              var charaDivHealth = document.createElement(`div`)
+              charaDivHealth.id=`div_${initPlayerList[i].CID}_HP`
+              charaDivHealth.className=`characterDivHealth`
+              charaDiv.appendChild(charaDivHealth)
+              
+              //add the healthbar subsubdiv.
+              var charaDivHealthBar = document.createElement(`div`)
+              charaDivHealthBar.id=`div_${initPlayerList[i].CID}_HPBar`
+              charaDivHealthBar.innerHTML=`HP: ${initPlayerList[i].currHealth}/${initPlayerList[i].characterData.maxHealth}`
+              charaDivHealthBar.className=`characterDivHealthBar`
+              var barWidth = Math.floor((initPlayerList[i].currHealth/initPlayerList[i].characterData.maxHealth)*100)
+              console.log(`health% is ${barWidth}`)
+              charaDivHealthBar.style.width=`${barWidth}%`
+              charaDivHealth.appendChild(charaDivHealthBar)
+             
+
+              //add the HP subdiv.
+
+              //charaDiv.innerHTML=`${initPlayerList[i].characterData.name}`
+              party.appendChild(charaDiv)
+            }
+
+        })
+        //synchronize a player's data, including their position, health, and stats
+        socket.on(`syncPlayer`,(d)=>{
+          //Get the new player data, and compare it to the existing player's data.
+        })
+        //add a player to the current players list
+        socket.on(`addPlayer`,(d)=>{
+
+        })
+        //remove a character from the players list
+        socket.on(`removePlayer`,(d)=>{
+
+        })
+
+      }
+        
+
+      //get the coordinates on the canvas for usage in commands.
+      let getCPos = (ev) => {
+        var can = document.getElementById(`fog`)
+        var bound = can.getBoundingClientRect()
+        var xpos = event.clientX - bound.left
+        var ypos = event.clientY - bound.top
+        console.log(`click at ${xpos} ${ypos}`)
+      }
+      window.onload=init
+  </script>
+</head>
+<style>
+    #foot {
+      position: absolute;
+      bottom: 0
+    }
+    #main {
+      position: absolute;
+      height: 80%;
+      width: 85%;
+      border: 2px solid #9afde4;
+      overflow-y: scroll;
+      overflow-x: scroll;
+      
+    }
+    #fog {
+      position: absolute;
+      z-index: 100;
+    }
+    #bg {
+      position: absolute;
+      z-index: 1;
+      
+    }
+    #party {
+      position: fixed;
+      right: 0;
+      height: 80%;
+      width: 14%;
+      z-index: 1;
+      border: 2px solid #9afde4;
+    }
+    #playerInfo {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      height: 18%;
+      width: 100%;
+      z-index: 1;
+      border: 2px solid #9afde4;
+    }
+
+    .characterImages{
+      position: absolute;
+      z-index: 10;
+    }
+    .characterDivs {
+      position: relative;
+      border: 2px solid #9afde4;
+      height: 75px;
+      width: 90%
+    }
+    .characterDivHealth {
+      z-index: 0;
+      position: absolute;
+      border: 2px solid #666666;
+      left: 5%;
+      width: 80%;
+      height: 20px;
+    }
+
+    .characterDivHealthBar {
+      z-index: 5;
+      position: absolute;
+      background-color: greenyellow;
+      white-space: nowrap;
+      height: 100%;
+    }
+
+
+    #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+    #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+  </style>
+<body>
+
+    <div id="main">
+      
+        <canvas id="fog"></canvas>
+    </div>
+    <div id="party">
+      Current Players:
+    </div>
+    <div id="playerInfo">
+      You are the DM!
+      <form id="form">
+        <input id="input" autocomplete="off" onsubmit="return false"/><button>Send</button>
+      </form>
+    </div>
+
+    
+</body>
+</html>
