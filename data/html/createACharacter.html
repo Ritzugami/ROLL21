@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Create a Character...</title>
+</head>
+<style>
+    #foot {
+      position: absolute;
+      bottom: 0
+    }
+  </style>
+<body>
+    <script>
+      let upF = () => {
+        var r = new FileReader();
+        r.onload = (imgData) => {
+          console.log(`done reading!`)
+          var imgb64 = imgData.target.result
+          console.log(imgb64)
+          document.getElementById('up').src = imgb64
+          console.log(imgb64.length)
+          //The Big Get
+          var name = document.getElementById(`nameI`).value
+          var level = document.getElementById(`levelI`).value
+          var race = document.getElementById(`raceI`).value
+          var class1 = document.getElementById(`class1I`).value
+          var class2 = document.getElementById(`class2I`).value
+          var str = document.getElementById(`strI`).value
+          var dex = document.getElementById(`dexI`).value
+          var con = document.getElementById(`conI`).value
+          var int = document.getElementById(`intI`).value
+          var wis = document.getElementById(`wisI`).value
+          var cha = document.getElementById(`chaI`).value
+          var maxHealth = document.getElementById(`maxHealthI`).value
+          var hitDie = document.getElementById(`hitDieI`).value
+          var ac = document.getElementById(`ACI`).value
+          var speed = document.getElementById(`speedI`).value
+
+
+
+          var b = JSON.stringify({
+            name: name,
+            level: level,
+            race: race,
+            class1: class1,
+            class2: class2,
+            str: str,
+            dex: dex,
+            con: con,
+            wis: wis,
+            con: con,
+            int: int,
+            wis: wis,
+            cha: cha,
+            maxHealth: maxHealth,
+            hitDie: hitDie,
+            ac: ac,
+            speed: speed,
+            imgBuffer64: imgData.target.result
+          })
+
+          console.log(b)
+          return
+          fetch(`/createCharacterInternal`,{
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: b
+            
+          })
+          window.alert(`Chara successfully created. Check the view characters page to view it.`)
+          location.href=`/home`
+        }
+        console.log(`uploading...`)
+        var bgi = document.getElementById('bgUpload').files[0]
+        r.readAsDataURL(bgi)
+        
+      }
+    </script>
+    ~~Create a Character~~
+    <p>Character name:</p>
+    <input id="nameI"> </input>
+    <p>Level:</p>
+    <input id="levelI"> </input>
+    <p>Race:</p>
+    <input id="raceI"> </input>
+    <p>Class:</p>
+    <input id="class1I"> </input>
+    <p>Secondary class, if you have one:</p>
+    <input id="class2I"> </input>
+    <br>
+    <br>
+    ____________________________________________<br>
+    Strength: <input id="strI"> </input><br>
+    Dexterity: <input id="dexI"> </input><br>
+    Constitution: <input id="conI"> </input><br>
+    Intelligence: <input id="intI"> </input><br>
+    Wisdom: <input id="wisI"> </input><br>
+    Charisma: <input id="chaI"> </input><br>
+    ____________________________________________<br>
+    Max Health: <input id="maxHealthI"> </input><br>
+    Hit Die: <input id="hitDieI"> </input><br>
+    Armor Class:  <input id="ACI"> </input><br>
+    Speed:  <input id="speedI"> </input><br>
+    <p>Upload a character Image</p>
+      <p><i>Your picture will be resized to a 100x100 token during gameplay.</i></p>
+      <input type="file" id="bgUpload" name="filename">
+    <img id="up"></img>
+    <br><br>
+    <button onclick="upF()">Create Character</button>
+</body>
+<footer id="foot">
+<a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>
+</footer>
+</html>

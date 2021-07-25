@@ -234,6 +234,10 @@ app.get(`/hostagame`, (req,res) => {
     res.sendFile(__dirname+`\\data\\html\\hostAGame.html`)
 })
 
+app.get(`/createacharacter`, (req,res) => {
+    res.sendFile(__dirname+`\\data\\html\\createACharacter.html`)
+})
+
 //Prepare the server for a hosted game. Load data into server memory for easy distribution and to reduce reads. The largest item is the background image, and that's not usually any bigger than 20mb (for a very large background). Memory space is not an issue as only one game can be loaded at a time, per server instance.
 app.get(`/hostInit`, async (req,res) => {
     //first check that the requested game exists.
