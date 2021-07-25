@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>canvas clip</title>
+    </head>
+    <style>
+        #eng {
+            position: fixed;
+            z-index: -1;
+        }
+
+    </style>
+    <body>
+        <img src="engie.gif" id="eng">
+        <canvas id="the-canvas" width="1000" height="1000"></canvas>
+        
+        <script>
+// get canvas can 2d context
+var canvas = document.getElementById('the-canvas'),
+ctx = canvas.getContext('2d');
+ 
+// fill rect
+ctx.fillStyle = 'blue'
+ctx.fillRect(0,0, canvas.width, canvas.height);
+
+
+ctx.clearRect(200,200,500,500);
+ctx.fillRect(200,200,200,200)
+        </script>
+<button onclick="document.getElementById('file-input').click();">Open</button>
+<input id="file-input" type="file" name="name" style="display: none;" />
+    </body>
+</html>

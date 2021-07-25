@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>title</title>
+  <script>
+    let initAcct = () =>
+    {
+      var un = document.getElementById("une").value
+      var pw = document.getElementById("pwe").value
+      var pwc = document.getElementById("pwce").value
+      if(pw!==pwc)
+      {
+        alert("Check that your passwords match, you sussy baka!")
+        return
+      }
+      location.href=`/initAcct?un=${un}&pw=${pw}`
+    }
+  </script>
+</head>
+<style>
+  #foot {
+    position: absolute;
+    bottom: 0
+  }
+</style>
+<body>
+    
+    Create an account!
+    <p>Username:</p> 
+    <input id="une"></input>
+    <p color="#FF0000"><b><i>NOTE!</i></b> R21 is currently in development, and password storage is not secure.<br>PLEASE don't use a password that you've used for anything else before!</p>
+    <p>Password:</p> 
+    <input id="pwe"></input>
+    <p>Confirm Password:</p> 
+    <input id ="pwce"></input>
+    <br>
+    <button onclick="initAcct()">Submit</button>
+</body>
+<footer id="foot">
+<a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>
+</footer>
+</html>

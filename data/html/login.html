@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>title</title>
+  <script>
+    let attemptLogin = () => {
+      console.log(`attempting to log...`)
+      var un = document.getElementById(`uni`).value;
+      var pw = document.getElementById(`pwi`).value;
+      location.href=`/checkLogin?un=${un}&pw=${pw}`
+    }
+  </script>
+</head>
+<style>
+    #foot {
+      position: absolute;
+      bottom: 0
+    }
+  </style>
+<body>
+    Welcome to Roll 21!
+    <div>
+        <p>Username:</p> 
+        <input id="uni"></input>
+        <p>Password:</p> 
+        <input id="pwi"></input>
+        <br>
+        <button onclick="attemptLogin()">
+          yuh
+        </button>
+        <a href="/createAnAccount">Create an account...</a>
+    </div>
+</body>
+<footer id="foot">
+<a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>
+</footer>
+</html>

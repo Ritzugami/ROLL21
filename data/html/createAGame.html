@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Create a game...</title>
+</head>
+<style>
+    #foot {
+      position: absolute;
+      bottom: 0
+    }
+  </style>
+<body>
+    <script>
+      let upF = () => {
+        var r = new FileReader();
+        r.onload = (imgData) => {
+          console.log(`done reading!`)
+          var imgb64 = imgData.target.result
+          console.log(imgb64)
+          document.getElementById('up').src = imgb64
+          console.log(imgb64.length)
+          var b = JSON.stringify({
+            gameID: "sdf",
+            bgData: imgb64
+          })
+          fetch(`/createGameInternal`,{
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: b
+            
+          })
+          window.alert(`Game successfully created. Check the create games page to view it.`)
+          location.href=`/home`
+        }
+        console.log(`uploading...`)
+        var bgi = document.getElementById('bgUpload').files[0]
+        r.readAsDataURL(bgi)
+        
+      }
+    </script>
+    ~~Create a game!~~
+    <p>Game name</p>
+    <input id="gameNameI"> </input>
+      <p>Upload a background image</p>
+      <p><i>This is the "map" that your players will play on. You can obscure and reveal parts of the map as you see fit.</i></p>
+      <p>MAKE SURE TO SIZE THIS IMAGE APPROPRIATELY! Character tokens are 100x100 pixels, for reference. Make sure your map isnt too big or small for them!</p>
+      <input type="file" id="bgUpload" name="filename">
+    <img id="up"></img>
+    <br><br>
+    <button onclick="upF()">Create Game</button>
+</body>
+<footer id="foot">
+<a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>
+</footer>
+</html>
