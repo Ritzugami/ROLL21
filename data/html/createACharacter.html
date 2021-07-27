@@ -59,9 +59,6 @@
             speed: speed,
             imgBuffer64: imgData.target.result
           })
-
-          console.log(b)
-          return
           fetch(`/createCharacterInternal`,{
             method: "POST",
             headers: {
@@ -70,8 +67,8 @@
             body: b
             
           })
-          window.alert(`Chara successfully created. Check the view characters page to view it.`)
-          location.href=`/home`
+          //window.alert(`Chara successfully created. Check the view characters page to view it.`)
+          //location.href=`/home`
         }
         console.log(`uploading...`)
         var bgi = document.getElementById('bgUpload').files[0]
@@ -109,7 +106,7 @@
       <input type="file" id="bgUpload" name="filename">
     <img id="up"></img>
     <br><br>
-    <button onclick="upF()">Create Character</button>
+    <button onclick="upF()">Create Character!</button>
 </body>
 <footer id="foot">
 <a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>

@@ -2,6 +2,7 @@ const express = require(`express`)
 const cookieParser = require(`cookie-parser`)
 const bp = require(`body-parser`)
 const app = express();
+const {Image, createCanvas} = require(`canvas`)
 app.use(cookieParser())
 app.use(express.json({
     limit: `200mb`
@@ -238,6 +239,24 @@ app.get(`/createacharacter`, (req,res) => {
     res.sendFile(__dirname+`\\data\\html\\createACharacter.html`)
 })
 
+
+
+//create a character
+app.post(`/createCharacterInternal`, async (req,res)=> {
+    console.log(`received character creation request`)
+    var x = await convertToPNGBuffer(req.body.imgBuffer64)
+    console.log(`imgbuffer is ${x.length}`)
+    fs.writeFile(`./lelele.png`,x,`base64`,()=> {
+        console.log(`done writing`)
+    })
+    //request that the buffer be transformed to a png.
+    //convertToPNG(req.body.imgBuffer64)
+
+    
+})
+
+
+
 //Prepare the server for a hosted game. Load data into server memory for easy distribution and to reduce reads. The largest item is the background image, and that's not usually any bigger than 20mb (for a very large background). Memory space is not an issue as only one game can be loaded at a time, per server instance.
 app.get(`/hostInit`, async (req,res) => {
     //first check that the requested game exists.
@@ -335,3 +354,30 @@ let checkAuth = (r) => {
     else return false
 }
 
+//takes in a dataURL of any image type and returns it as a plain B64 PNG buffer.
+let convertToPNGBuffer = async (buf) => {
+    return new Promise((rs,rj) => {
+        console.log(`converting... imgbuffer length is ${buf.length}`)
+        var tempImg = new Image()
+        
+        tempImg.onerror = () => { console.log(`error!`)}
+        tempImg.onload = () => {
+            console.log(`processing image`)
+            
+            
+            //handle the image.
+            
+            c = createCanvas(100,100)
+            const ctx = c.getContext(`2d`)
+            ctx.drawImage(tempImg,0,0,100,100)
+            var tdu = c.toDataURL('image/png')
+            tdu = tdu.replace(`data:image/png;base64,`,``)
+            rs(tdu)
+        }
+        tempImg.src = buf;
+    })
+    
+   
+    
+    
+}
