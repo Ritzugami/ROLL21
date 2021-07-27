@@ -111,10 +111,13 @@ app.get(`/checklogin`,async (req,res) => {
         
     })
     //remove ,json filetype from strings.
+    /*
     for(var i =0;i<accts.length;i++)
     {
-        accts[i] = accts[i].replace(/.json/g,``)
+        accts[i] = accts[i].replace(/_.{16}\.json/g,``)
     }
+    */
+
     //check if there's a matching acct. If so, login. if not, redirect to login screen.
     var acctFound = false;
     var checkedAll = false;
@@ -122,13 +125,18 @@ app.get(`/checklogin`,async (req,res) => {
     var acctInfo;
     var i = 0;
     //check login. This is rudimentary and temporary.
+    var regCheck = `${un}_.{16}\.json`
     while(!acctFound && !checkedAll)
     {
-        if(un===accts[i])
+        //all accounts are of format accountName_accountID.json, so check accordingly
+        var checkStr = null;
+        if(accts[i].match(regCheck)) var checkStr = accts[i].match(regCheck)[0]
+        console.log(checkStr)
+        if(accts[i]===checkStr)
         {
             acctFound = true
             await new Promise((rs,rj) => {
-                fs.readFile(__dirname+`\\data\\accounts\\${un}.json`,`utf8`,(err,data) => {
+                fs.readFile(__dirname+`\\data\\accounts\\${checkStr}`,`utf8`,(err,data) => {
                     acctInfo = JSON.parse(data)
                     console.log(acctInfo)
                     if(acctInfo.password===pw) loginSuccess = true;
@@ -172,9 +180,18 @@ app.get(`/initAcct`,async (req,res) => {
     {
         AID += genStr[Math.floor(Math.random()*genStr.length)]
     }
-    var j = `{"username": "${req.query.un}", "password": "${req.query.pw}", "AID": "${AID}"}`
+    var j = {
+        "username": req.query.un, 
+        "password": req.query.pw, 
+        "AID": AID,
+        characters: [],
+        games: []
+
+    
+    }
     await new Promise((rs,rj) => {
-        fs.writeFile(__dirname+`\\data\\accounts\\${req.query.un}.json`,j,() => {
+    var accStr = JSON.stringify(j)
+        fs.writeFile(__dirname+`\\data\\accounts\\${req.query.un}_${AID}.json`,accStr,() => {
             rs()
         })
     })
@@ -240,17 +257,68 @@ app.get(`/createacharacter`, (req,res) => {
 })
 
 
+// a function that locates a full account filename by AID
+let readAccountDataByAID = async (AID) => {
+    return new Promise(async (rs1,rj1)=> {        
+        var accts = await new Promise((rs,rj) => {
+            console.log(__dirname + `\\data\\accounts`)
+            fs.readdir(__dirname + `\\data\\accounts`, (err,files) => {
+                rs(files)
+            })
+        })
+        var i = 0;
+        var foundAcc = false;
+        var regCheck = `.+_${AID}\.json`
+        var outStr = `NONE`;
+        while(i<accts.length && !foundAcc)
+        {
+            if(accts[i].match(regCheck))
+            {
+            foundAcc=true
+            outStr=accts[i].match(regCheck)[0];
+            i--
+            }
+            i++
+        }
+        rs1(outStr)
+    })
+
+}
 
 //create a character
 app.post(`/createCharacterInternal`, async (req,res)=> {
+    //create a character ID.
+    var AID = req.cookies.AID
+    var genStr = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
+    var CID = ``
+    for(var tokenCon = 0; tokenCon<16;tokenCon++)
+    {
+        CID += genStr[Math.floor(Math.random()*genStr.length)]
+    }
+    console.log(CID)
+
+
+    //handle, resize, write
     console.log(`received character creation request`)
-    var x = await convertToPNGBuffer(req.body.imgBuffer64)
-    console.log(`imgbuffer is ${x.length}`)
-    fs.writeFile(`./lelele.png`,x,`base64`,()=> {
-        console.log(`done writing`)
+    var ib64 = await resizeToPNGBuffer(req.body.imgBuffer64,100,100)
+    console.log(`imgbuffer is ${ib64.length}`)
+    await new Promise ((rs,rj)=> {
+        fs.writeFile(`.\\data\\characterImages\\${CID}_cimg.png`,x,`base64`,()=> {
+            console.log(`done writing image`)
+            rs()
+        })
     })
-    //request that the buffer be transformed to a png.
-    //convertToPNG(req.body.imgBuffer64)
+
+
+    //write the JSON. remove the image buffer as its no longer needed
+    var charData = JSON.parse(JSON.stringify(req.body))
+    delete charData.imgBuffer64
+    charData.CID = CID
+
+    var fullAcctName = await readAccountDataByAID(AID);
+    //console.log(charData)
+
+
 
     
 })
@@ -355,7 +423,7 @@ let checkAuth = (r) => {
 }
 
 //takes in a dataURL of any image type and returns it as a plain B64 PNG buffer.
-let convertToPNGBuffer = async (buf) => {
+let resizeToPNGBuffer = async (buf,x,y) => {
     return new Promise((rs,rj) => {
         console.log(`converting... imgbuffer length is ${buf.length}`)
         var tempImg = new Image()
@@ -369,7 +437,7 @@ let convertToPNGBuffer = async (buf) => {
             
             c = createCanvas(100,100)
             const ctx = c.getContext(`2d`)
-            ctx.drawImage(tempImg,0,0,100,100)
+            ctx.drawImage(tempImg,0,0,x,y)
             var tdu = c.toDataURL('image/png')
             tdu = tdu.replace(`data:image/png;base64,`,``)
             rs(tdu)
