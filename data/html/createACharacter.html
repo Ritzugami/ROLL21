@@ -12,9 +12,9 @@
   </style>
 <body>
     <script>
-      let upF = () => {
+      let upF = async () => {
         var r = new FileReader();
-        r.onload = (imgData) => {
+        r.onload = async (imgData) => {
           console.log(`done reading!`)
           var imgb64 = imgData.target.result
           console.log(imgb64)
@@ -59,7 +59,7 @@
             speed: speed,
             imgBuffer64: imgData.target.result
           })
-          fetch(`/createCharacterInternal`,{
+          var tempres = await fetch(`/createCharacterInternal`,{
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -67,6 +67,15 @@
             body: b
             
           })
+          var res = await tempres.json()
+          if(res.status===`SUCCESS`)
+          {
+            window.alert(`OK! Character created.`)
+            location.href=`/home`
+          } else {
+            window.alert(`Server rejected the submission!\nResponse: ${res.status}\nReason: ${res.note}`)
+          }
+          console.log(res)
           //window.alert(`Chara successfully created. Check the view characters page to view it.`)
           //location.href=`/home`
         }

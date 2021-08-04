@@ -130,7 +130,7 @@ app.get(`/checklogin`,async (req,res) => {
     {
         //all accounts are of format accountName_accountID.json, so check accordingly
         var checkStr = null;
-        if(accts[i].match(regCheck)) var checkStr = accts[i].match(regCheck)[0]
+        if(accts[i] && accts[i].match(regCheck)) var checkStr = accts[i].match(regCheck)[0]
         console.log(checkStr)
         if(accts[i]===checkStr)
         {
@@ -148,7 +148,7 @@ app.get(`/checklogin`,async (req,res) => {
             
         }
         i++
-        if(i==accts.length) checkedAll=true;
+        if(i>=accts.length) checkedAll=true;
     }
 
     if(checkedAll && !acctFound)
@@ -297,33 +297,120 @@ app.post(`/createCharacterInternal`, async (req,res)=> {
     }
     console.log(CID)
 
+    //write the JSON. remove the image buffer as its no longer needed
+    var charData = JSON.parse(JSON.stringify(req.body))
+    delete charData.imgBuffer64
+    charData.CID = CID
+
+    //Check if character is OK for creation.
+
+    if(charData.name===``)
+    {
+        console.log(`returning.`)
+        res.send({status:`FIELD_INVALID`,note:`Name cannot be empty. Idiot.`})
+        return
+    }
+
 
     //handle, resize, write
     console.log(`received character creation request`)
     var ib64 = await resizeToPNGBuffer(req.body.imgBuffer64,100,100)
     console.log(`imgbuffer is ${ib64.length}`)
     await new Promise ((rs,rj)=> {
-        fs.writeFile(`.\\data\\characterImages\\${CID}_cimg.png`,x,`base64`,()=> {
+        fs.writeFile(`.\\data\\characterImages\\${CID}_cimg.png`,ib64,`base64`,()=> {
             console.log(`done writing image`)
             rs()
         })
     })
 
 
-    //write the JSON. remove the image buffer as its no longer needed
-    var charData = JSON.parse(JSON.stringify(req.body))
-    delete charData.imgBuffer64
-    charData.CID = CID
 
+
+    
+    //read the acct w/ appropriate filename
     var fullAcctName = await readAccountDataByAID(AID);
-    //console.log(charData)
+    console.log(`retrieved ${fullAcctName}`)
+    var accInfo = await new Promise((rs,rj) => {
+        fs.readFile(__dirname+`\\data\\accounts\\${fullAcctName}`,`utf8`,(err,data) => {
+            var tj = JSON.parse(data)
+            rs(tj)
+        })
+    })
+    accInfo.characters.push(CID)
 
+    //rewrite the account info
+    console.log(accInfo)
+    await new Promise ((rs,rj)=> {
+        fs.writeFile(`.\\data\\accounts\\${fullAcctName}`,JSON.stringify(accInfo),`utf8`,()=> {
+            console.log(`done writing acct`)
+            rs()
+        })
+    })
+
+    //write the character info
+    console.log(accInfo)
+    await new Promise ((rs,rj)=> {
+        fs.writeFile(`.\\data\\characters\\${accInfo.AID}_${CID}.json`,JSON.stringify(charData),`utf8`,()=> {
+            console.log(`done writing acct`)
+            rs()
+        })
+    })
+    //console.log(charData)
+    res.send({status:`SUCCESS`})
+    return
 
 
     
 })
 
+app.get(`/chooseyourfighter`, async(req,res) => {
+    
+    var reqAID = req.cookies.AID
+    
+    res.sendFile(__dirname+`/data/html/chooseyourfighter.html`)
 
+})
+
+//list all characters that a player has.
+app.get(`/listCharacters`, async(req,res) => {
+
+    //get a list of all characters an AID owns
+    var reqAID = req.cookies.AID
+    var AIDregex = `${reqAID}_.{16}`
+    var acctCharas = []
+    console.log(`getting characters for ${reqAID}`)
+    var chars = await new Promise((rs,rj) => {
+        fs.readdir(__dirname + `\\data\\characters`, (err,files) => {
+            rs(files)
+        })
+        
+    })
+    for(var i = 0; i<chars.length;i++)
+    {
+        if(chars[i].match(AIDregex))
+        {
+            acctCharas.push(chars[i].match(AIDregex)[0])
+        } 
+    }
+
+    //read the accompanying JSONs and their data
+    var charactersResponse = {availableCharacters: []}
+    for(var i =0; i<acctCharas.length;i++)
+    {
+        console.log(`${acctCharas[i]}.json`)
+        var chara = await new Promise((rs,rj) => {
+            console.log(__dirname+`\\data\\characters\\${acctCharas[i]}.json`)
+            fs.readFile(__dirname+`\\data\\characters\\${acctCharas[i]}.json`,`utf8`,(err,data) => {
+                rs(data)
+            })
+        })
+        console.log(charactersResponse.availableCharacters.push(JSON.parse(chara)))
+    }
+
+
+    console.log(`ding!`)
+    res.send(charactersResponse)
+})
 
 //Prepare the server for a hosted game. Load data into server memory for easy distribution and to reduce reads. The largest item is the background image, and that's not usually any bigger than 20mb (for a very large background). Memory space is not an issue as only one game can be loaded at a time, per server instance.
 app.get(`/hostInit`, async (req,res) => {
@@ -413,6 +500,10 @@ app.get(`/hostInit`, async (req,res) => {
 
 app.get(`/gamedm`, async (req,res) => {
     res.sendFile(__dirname+`\\data\\html\\gamedm.html`)
+})
+
+app.get(`/gameplayer`, async (req,res) => {
+    res.sendFile(__dirname+`\\data\\html\\gameplayer.html`)
 })
 
 
