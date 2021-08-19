@@ -1,2 +1,9 @@
 node_modules 
-data
+data/accounts
+data/characterImages
+data/entities
+data/characterImages
+data/gameImages
+data/entityImages
+data/characters
+data/games

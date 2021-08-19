@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>title</title>
+  <script>
+    var characters;
+    let init = async () => {
+      
+      var res = await fetch(`/listCharacters`)
+      var j = await res.json()
+      characters = j.availableCharacters.slice()
+      console.log(characters)
+      //add characters to the dropdown.
+      var s = document.getElementById(`s`)
+      for(var i =0; i<characters.length;i++)
+      {
+        var opt = document.createElement("option")
+        opt.text = characters[i].name
+        opt.value = characters[i].CID
+        s.add(opt)
+      }
+      console.log(`characters loaded`)
+    }
+    window.onload = init
+  </script>
+  <script>
+    let uChar = () => {
+      console.log(`updating chara...`)
+      var CID = document.getElementById(`s`).value
+      console.log(CID)
+      var found = false;
+      var i =0;
+      while(i<characters.length && !found)
+      {
+        if(CID===characters[i].CID)
+        {
+          console.log(`found ${characters[i].name}`)
+          var c = characters[i];
+          found=true
+        }
+        i++
+      }
+      if(!found) return;
+      //set all characters info.
+      var cats = ["name","race","level","class1","str","dex","con","int","wis","cha","ac","maxHealth","speed"]
+      var cons = ["nameCon2","raceCon2","levelCon2","classCon2","strCon2","dexCon2","conCon2","intCon2","wisCon2","chaCon2","ACCon2","hpCon2","speedCon2"]
+      for(var i=0;i<cons.length;i++)
+      {
+        console.log(cons[i])
+        document.getElementById(cons[i]).innerHTML=c[`${cats[i]}`]
+      }
+
+    }
+  </script>
+</head>
+<style>
+  #foot {
+    position: absolute;
+    bottom: 0
+  }
+  #cInfo {
+    width: 100%;
+    height: 500px;
+    border: 2px solid #9afde4;
+    grid-template-columns: 30% 17% 18% 32%;
+    grid-template-rows: 50px 50px 50px 50px 50px 50px 50px 50px 50px ;
+    grid-gap: 10px;
+    display: grid;
+  }
+
+  #statCon {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  #nameCon {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    border: 10px ridge #999999;
+    height: 110px
+  } 
+
+  #raceCon {
+    grid-column: 2 / span 3;
+    grid-row: 1;
+    border: 10px ridge #999999;
+    height: 50px;
+    width: 49%;
+  }
+
+  #classCon {
+    grid-column: 2 / span 3;
+    grid-row: 2;
+    border: 10px ridge #999999;
+    height: 50px;
+    width: 49%;
+  }
+  #levelCon {
+    grid-column: 4;
+    grid-row: 1;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+
+  #alCon {
+    grid-column: 4;
+    grid-row: 2;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+
+  #strCon {
+    grid-column: 1;
+    grid-row: 3;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #dexCon {
+    grid-column: 1;
+    grid-row: 4;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #conCon {
+    grid-column: 1;
+    grid-row: 5;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #intCon {
+    grid-column: 1;
+    grid-row: 6;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #wisCon {
+    grid-column: 1;
+    grid-row: 7;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #chaCon {
+    grid-column: 1;
+    grid-row: 8;
+    border: 10px ridge #999999;
+    height: 50px
+  }
+  #featCon {
+    grid-column: 4;
+    grid-row: 3 / span 1;
+    border: 10px ridge #999999;
+    height: 160px
+  } 
+  #itemCon {
+    grid-column: 4;
+    grid-row: 6 / span 2;
+    border: 10px ridge #999999;
+    height: 180px
+  } 
+  #hpCon {
+    grid-column: 2;
+    grid-row: 3 / span 2;
+    border: 10px ridge #999999;
+    height: 100px
+  } 
+  #ACCon {
+    grid-column: 3;
+    grid-row: 3 / span 2;
+    border: 10px ridge #999999;
+    height: 110px
+  } 
+
+  #ACCon {
+    grid-column: 3;
+    grid-row: 3;
+    border: 10px ridge #999999;
+    height: 40px
+  } 
+  
+  #speedCon {
+    grid-column: 3;
+    grid-row: 4;
+    border: 10px ridge #999999;
+    height: 40px
+  } 
+  #spellsCon {
+    grid-column: 2 / span 2;
+    grid-row: 5 / span 4;
+    border: 10px ridge #999999;
+    height: 230px
+  } 
+
+  .conText {
+    font-size: 30px;
+    position: relative;
+    right: 10px;
+    top: -10px;
+    text-align: right;
+    font: Courier;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+  }
+</style>
+<body>
+    
+    CHOOSE YOUR FIGHTER!
+    <br>
+    <br>
+    <br>
+    
+    <select name="CHOOSE!" id="s" onchange="uChar()">
+      <option value="none">Choose a character...</option>
+    </select>
+    <div id="cInfo">
+      <div id = "nameCon">
+        Name:
+        <div id = "nameCon2" class="conText">
+        </div>
+      </div>
+      <div id="raceCon">
+        Race:
+        <div id = "raceCon2" class="conText">
+        </div>
+      </div>
+      <div id="classCon">
+        Class:
+        <div id = "classCon2" class="conText">
+        </div>
+      </div>
+      <div id="levelCon">
+        Level
+        <div id = "levelCon2" class="conText">
+        </div>
+      </div>
+      <div id="alCon">
+        Alignment
+      </div>
+      <div id="strCon">
+        Strength
+        <div id = "strCon2" class="conText">
+        </div>
+      </div>
+      <div id="dexCon">
+        Dex
+        <div id = "dexCon2" class="conText">
+        </div>
+      </div>
+      <div id="conCon">
+        Con
+        <div id = "conCon2" class="conText">
+        </div>
+      </div>
+      <div id="intCon">
+        Intelligence
+        <div id = "intCon2" class="conText">
+        </div>
+      </div>
+      <div id="wisCon">
+        Wisdom
+        <div id = "wisCon2" class="conText">
+        </div>
+      </div>
+      <div id="chaCon">
+        Charisma
+        <div id = "chaCon2" class="conText">
+        </div>
+      </div>
+      <div id="itemCon">
+        Items
+        <div id = "itemCon2" class="conText">
+        </div>
+      </div>
+      <div id="featCon">
+        Features and Traits
+        <div id = "featCon2" class="conText">
+        </div>
+      </div>
+      <div id="hpCon">
+        Max HP
+        <div id = "hpCon2" class="conText">
+        </div>
+      </div>
+      <div id="ACCon">
+        AC
+        <div id = "ACCon2" class="conText">
+        </div>
+      </div>
+      <div id="spellsCon">
+        Spells
+      </div>
+      <div id="speedCon">
+        Speed
+        <div id = "speedCon2" class="conText">
+        </div>
+      </div>
+
+    </div>
+
+    <br>
+    <br>
+
+    START THE GAME!
+    <br>
+    <button>HIT IT, DOC!</button>
+</body>
+<footer id="foot">
+<a href="https://github.com/Ritzugami">Coded with ❤️ by Ritzugami!</a>
+</footer>
+</html>
